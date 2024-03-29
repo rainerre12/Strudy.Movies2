@@ -1,0 +1,29 @@
+﻿@using WebApplication1.Models.CustomModel
+@model HomeViewModel
+
+
+<div class="modal-header">
+    <h4 class="modal-title">Register Movie</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+
+   <div class="form-group">
+       <label for="inputmoviename">Name</label>
+        @Html.TextBoxFor(model => model.Movies.Name, new { @class = "form-control", id = "inputmoviename", placeholder = "Movie Name" })
+   </div>
+
+   <div class="form-group">
+       <label for="selectgenre">Genre</label>
+        @Html.DropDownListFor(model => model.selectedGenreId, new SelectList(Model.GenreList, "Id", "Name"), "Select a genre", new { @class = "form-control" , id = "selectedGenreId"})
+   </div>
+
+
+</div>
+<div class="modal-footer justify-content-between">
+    <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-outline-light" id="registerMovie">Register</button>
+</div> 

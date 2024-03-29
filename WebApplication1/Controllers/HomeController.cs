@@ -46,7 +46,8 @@ namespace WebApplication1.Controllers
                 }
                 else if (typeof(T) == typeof(Movies))
                 {
-                    items = await _context.movies.Where(m => m.IsAvailanble == true).ToListAsync() as List<T>;
+                    //items = await _context.movies.Where(m => m.IsAvailanble == true).ToListAsync() as List<T>;
+                    items = await _context.movies.ToListAsync() as List<T>;
                 }
                 else if(typeof(T) == typeof(Persons))
                 {
@@ -66,7 +67,22 @@ namespace WebApplication1.Controllers
             }
         }
 
+        public IActionResult RegisterUser()
+        {
+            return PartialView("~/Views/Home/Dialog/RegisterUser.cshtml");
+        }
 
+        public async Task<IActionResult> RegisterMovie()
+        {
+            var model = new HomeViewModel();
+            model.GenreList = await GetAllItems<Genre>();
+            return PartialView("~/Views/Home/Dialog/RegisterMovie.cshtml",model);
+        }
+
+        public IActionResult AssignedUser()
+        {
+            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml");
+        }
 
         #endregion
 

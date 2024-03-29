@@ -18,5 +18,10 @@
         public List<Movies> MovieList { get; set; }
         public List<Persons> PersonList { get; set; }
 
+
+
+
+        public int selectedGenreId { get; set; } = 0;
+
     }
 }
