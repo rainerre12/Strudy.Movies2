@@ -1,7 +1,6 @@
 ﻿@using WebApplication1.Models.CustomModel
 @model HomeViewModel
 
-
 <div>
 
     <div class="content-header">
@@ -37,32 +36,32 @@
                         </div>
 
                         <div class="card-body">
-                            <table id="movietbl" class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Id</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var d in Model.MovieList)
-                                    {
-                                        <tr>
-                                            <td>@d.Id</td>
-                                            <td>@d.Name</td>
-                                            @if (d.IsAvailanble)
-                                            {
-                                                <td><span class="badge badge-success">Available</span></td>
-                                            }
-                                            else
-                                            {
-                                                <td><span class="badge badge-danger">Unavailable</span></td>
-                                            }
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                            @* <table id="movietbl" class="table table-bordered table-striped">
+                            <thead>
+                            <tr>
+                            <th>Id</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var d in Model.MovieList)
+                            {
+                            <tr>
+                            <td>@d.Id</td>
+                            <td>@d.Name</td>
+                            @if (d.IsAvailanble)
+                            {
+                            <td><span class="badge badge-success">Available</span></td>
+                            }
+                            else
+                            {
+                            <td><span class="badge badge-danger">Unavailable</span></td>
+                            }
+                            </tr>
+                            }
+                            </tbody>
+                            </table> *@
                         </div>
 
                         <div class="card-footer">
@@ -123,6 +122,49 @@
                         </div>
 
                         <div class="card-body">
+                            <table id="movietbl" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Genre</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody >
+                                    @foreach (var d in Model.MovieList)
+                                    {
+                                        <tr>
+                                            <td>@d.MovieName</td>
+                                            <td>@d.GenreName</td>
+                                            @if (d.IsAvailable)
+                                            {
+                                                <td>
+                                                    <span class="badge badge-success">Available</span>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>
+                                                    <span class="badge badge-danger">Unavailable</span>
+                                                </td>
+                                            }
+                                            <td style="display: flex; justify-content: center;">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-warning">Action</button>
+                                                    <button type="button" class="btn btn-warning dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="#">Update</a>
+                                                        <a class="dropdown-item" href="#">Deactivate</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
 
                         <div class="card-footer">
@@ -147,7 +189,6 @@
         <div class="modal-content bg-secondary">
 
             <div id="ModalContent">
-
             </div>
 
         </div>
@@ -155,32 +196,14 @@
 </div>
 
 
-
-
 <script src="~/lib/plugins/jquery/jquery.min.js"></script>
 <script src="~/js/personal/IndexScript.js"></script>
 <script type="text/javascript">
-    var urlMovies = "@Url.Action("RegisterMovie","Home")";
-    var urlPersons = "@Url.Action("RegisterUser","Home")";
+    var urlMovies = "@Url.Action("RegisterMovie", "Home")";
+    var urlPersons = "@Url.Action("RegisterUser", "Home")";
     var urlAssigned = "@Url.Action("AssignedUser", "Home")";
 
     $(function () {
         window.initScript(urlPersons, urlMovies, urlAssigned);
     });
 </script>
-
-@* <script>
-    $(function () {
-
-        $("#movietbl").DataTable({
-            // "responsive": true, "lengthChange": false, "autoWidth": false,
-            // "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
-            "responsive": false, "lengthChange": true, "autoWidth": true
-        }).buttons().container().appendTo('#movietbl_wrapper .col-md-6:eq(0)');
-
-
-
-
-    });
-</script>
- *@

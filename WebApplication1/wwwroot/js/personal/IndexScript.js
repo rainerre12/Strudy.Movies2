@@ -27,7 +27,7 @@ $(function () {
 
             case 'RegisterUser':
 
-                console.log('RegisterUser');
+                //console.log('RegisterUser');
                 fetch(_urlPersons)
                     .then(response => response.text())
                     .then(data => {
@@ -37,7 +37,7 @@ $(function () {
                 break;
             case 'RegisterMovie':
 
-                console.log('RegisterMovie');
+                //console.log('RegisterMovie');
                 fetch(_urlMovies)
                     .then(response => response.text())
                     .then(data => {
