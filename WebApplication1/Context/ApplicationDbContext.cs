@@ -14,5 +14,6 @@ namespace WebApplication1.Context
         public DbSet<Movies> movies { get; set; }
         public DbSet<Genre> genres { get; set; }
         public DbSet<PersonsMovieMaps> personsMovieMaps { get; set;}
+        public DbSet<UserAccounts> userAccounts { get; set; }
     }
 }

@@ -4,7 +4,7 @@ var _urlPersons;
 var _urlMovies;
 var _urlAssigned;
 
-function initScript(urlPersons, urlMovies,urlAssigned) {
+function initScript(urlPersons, urlMovies, urlAssigned) {
     _urlMovies = urlMovies;
     _urlPersons = urlPersons;
     _urlAssigned = urlAssigned;
@@ -17,6 +17,10 @@ $(function () {
         // "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"]
         "responsive": false, "lengthChange": true, "autoWidth": true
     }).buttons().container().appendTo('#movietbl_wrapper .col-md-6:eq(0)');
+
+    $("#userstbl").DataTable({
+        "responsive": false, "lengthChange": true, "autoWidth": true
+    }).buttons().container().appendTo('#userstbl_wrapper .col-md-6:eq(0)');
 
     $('#modalRegister').on('show.bs.modal', function (event) {
         console.log('Sulod modal')

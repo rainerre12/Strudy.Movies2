@@ -6,6 +6,7 @@ using System.Diagnostics;
 using WebApplication1.Context;
 using WebApplication1.Models;
 using WebApplication1.Models.CustomModel;
+using static WebApplication1.Models.CustomModel.HomeViewModel;
 
 namespace WebApplication1.Controllers
 {
@@ -29,7 +30,7 @@ namespace WebApplication1.Controllers
             {
                 GenreList = await GetAllItems<Genre>(),
                 MovieList = await GetAllItems<HomeViewModel.MovieListItem>(),
-                PersonList = await GetAllItems<Persons>()
+                UsersList = await GetAllItems<HomeViewModel.UsersListItem>()
 
             };
 
@@ -43,7 +44,6 @@ namespace WebApplication1.Controllers
             try
             {
                 List<T> items = null;
-
                 switch (typeof(T))
                 {
                     case var type when type == typeof(Genre):
@@ -53,23 +53,34 @@ namespace WebApplication1.Controllers
                         break;
                     case var type when type == typeof(HomeViewModel.MovieListItem):
 
-                        var query = from movie in _context.movies
-                                    join genre in _context.genres on movie.Type equals genre.Id
-                                    select new HomeViewModel.MovieListItem
-                                    {
-                                        Id = movie.Id,
-                                        MovieName = movie.Name,
-                                        GenreName = genre.Name,
-                                        IsAvailable = movie.IsAvailanble
-                                    };
-                        items = await query.ToListAsync() as List<T>;
+                        var MovieListItem = from movie in _context.movies
+                                            join genre in _context.genres on movie.Type equals genre.Id
+                                            select new HomeViewModel.MovieListItem
+                                            {
+                                                Id = movie.Id,
+                                                MovieName = movie.Name,
+                                                GenreName = genre.Name,
+                                                IsAvailable = movie.IsAvailanble
+                                            };
+                        items = await MovieListItem.ToListAsync() as List<T>;
 
                         break;
-                    case var type when type == typeof(Persons):
+                    case var type when type == typeof(HomeViewModel.UsersListItem):
 
-                        items = await _context.persons.OrderBy(p => p.IsActive).ToListAsync() as List<T>;
-
+                        var UsersListItem = from persons in _context.persons
+                                            join useraccounts in _context.userAccounts on persons.Id equals useraccounts.personid
+                                            select new HomeViewModel.UsersListItem
+                                            {
+                                                personid = persons.Id,
+                                                useraccountid = useraccounts.Id,
+                                                FullName = persons.FirstName + ", " + persons.LastName,
+                                                Username = useraccounts.Username,
+                                                isActive = persons.IsActive,
+                                                hasPrivelage = useraccounts.hasPrivelage
+                                            };
+                        items = await UsersListItem.ToListAsync() as List<T>;
                         break;
+
                     default:
                         throw new NotSupportedException($"Type {typeof(T).Name} is not supported.");
 
@@ -95,6 +106,10 @@ namespace WebApplication1.Controllers
             model.GenreList = await GetAllItems<Genre>();
             return PartialView("~/Views/Home/Dialog/RegisterMovie.cshtml", model);
         }
+        public IActionResult AssignedUser()
+        {
+            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml");
+        }
 
         [HttpPost]
         public async Task<ActionResult> PostRegisterMovie([FromBody] HomeViewModel model)
@@ -102,24 +117,60 @@ namespace WebApplication1.Controllers
             var existingMovie = await _context.movies.FirstOrDefaultAsync(m => m.Name == model.Movies.Name);
             if (existingMovie != null)
                 return BadRequest();
-            var PostMovie = new Movies
+            var postMovie = new Movies
             {
                 Name = model.Movies.Name,
                 Type = model.Movies.Type,
                 IsAvailanble = true
             };
-            _context.movies.Add(PostMovie);
+            _context.movies.Add(postMovie);
             await _context.SaveChangesAsync();
             return Ok();
         }
 
-
-
-
-        public IActionResult AssignedUser()
+        [HttpPost]
+        public async Task<ActionResult> PostRegisterUser([FromBody] HomeViewModel model)
         {
-            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml");
+            try
+            {
+                var existingUser = await _context.userAccounts.FirstOrDefaultAsync(u => u.Username == model.userAccounts.Username);
+                var existingPerson = await _context.persons.FirstOrDefaultAsync(p => p.FirstName == model.Persons.FirstName && p.LastName == model.Persons.LastName);
+
+                if (existingUser != null)
+                    return BadRequest("User with the same username already exists.");
+                if (existingPerson != null)
+                    return BadRequest("Person with the same name already exists.");
+
+                var postPerson = new Persons
+                {
+                    FirstName = model.Persons.FirstName,
+                    LastName = model.Persons.LastName,
+                    IsActive = true
+                };
+                _context.persons.Add(postPerson);
+                await _context.SaveChangesAsync();
+
+                var personId = postPerson.Id;
+
+                var postUseraccount = new UserAccounts
+                {
+                    personid = personId,
+                    Username = model.userAccounts.Username,
+                    Userpassword = model.userAccounts.Userpassword,
+                    hasPrivelage = model.userAccounts.hasPrivelage
+                };
+                _context.userAccounts.Add(postUseraccount);
+                await _context.SaveChangesAsync();
+                return Ok("User registered successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                _logger.LogError(ex, "Error occurred while registering user.");
+                return StatusCode(500, "An error occurred while registering user. Please try again later.");
+            }
         }
+
 
         #endregion
 

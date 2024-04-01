@@ -49,10 +49,10 @@ $(function () {
                     //    alert('Movie with the same name already exists.');
                     var errorMessage = xhr.responseJSON && xhr.responseJSON.message;
                     if (errorMessage) {
-                        alert(errorMessage);
+                        toastr.error(errorMessage);
                     } else {
                         console.error('Error:', error);
-                        alert('Error occurred while adding person.')
+                        toastr.error('Error occurred while registering Movie');
                     }
                 }
                

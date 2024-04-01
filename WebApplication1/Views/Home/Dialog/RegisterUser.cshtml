@@ -12,12 +12,27 @@
     <div class="form-group">
         <label for="inputFirstName">First Name</label>
         @Html.TextBoxFor(model => model.Persons.FirstName, new { @class = "form-control", id = "inputFirstName", placeholder = "First Name" })
+        @Html.ValidationMessageFor(model => model.Persons.FirstName, "", new { @class = "text-danger" })
     </div>
 
     <div class="form-group">
-        <label for="inputLastName">First Name</label>
+        <label for="inputLastName">Last Name</label>
         @Html.TextBoxFor(model => model.Persons.LastName, new { @class = "form-control", id = "inputLastName", placeholder = "Last Name" })
+        @Html.ValidationMessageFor(model => model.Persons.LastName, "", new { @class = "text-danger" })
     </div>
+
+    <div class="form-group">
+        <label for="inputUserName">Username</label>
+        @Html.TextBoxFor(model => model.userAccounts.Username, new { @class = "form-control", id = "inputUserName", placeholder = "Username" })
+        @Html.ValidationMessageFor(model => model.userAccounts.Username, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="inputUserPassword">Password</label>
+        @Html.TextBoxFor(model => model.userAccounts.Userpassword, new { @class = "form-control", id = "inputUserPassword", placeholder = "Password",type = "password" })
+        @Html.ValidationMessageFor(model => model.userAccounts.Userpassword, "", new { @class = "text-danger" })
+    </div>
+
 
     <div class="form-check">
         <input type="checkbox" class="form-check-input" id="Checkisadmin">
@@ -27,5 +42,7 @@
 </div>
 <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
-    <button type="button" class="btn btn-outline-light">Register</button>
+    <button type="button" class="btn btn-outline-light" id="registerUser">Register</button>
 </div>
+<script src="~/lib/plugins/toastr/toastr.min.js"></script>
+<script src="~/js/personal/AddUseraccounts.js"></script>

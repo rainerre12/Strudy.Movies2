@@ -94,6 +94,52 @@
                         </div>
 
                         <div class="card-body">
+                            <table id="userstbl" class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var U in Model.UsersList)
+                                    {
+                                        <tr>
+                                            <td>@U.FullName</td>
+                                            <td>@U.Username</td>
+                                            @if (U.isActive)
+                                            {
+                                                <td>
+                                                    <span class="badge badge-success">Active</span>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>
+                                                    <span class="badge badge-danger">Unavailable</span>
+                                                </td>
+                                            }
+                                            <td style="display: flex; justify-content: center;">
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-warning">Action</button>
+                                                    <button type="button" class="btn btn-warning dropdown-toggle dropdown-icon" data-toggle="dropdown">
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu" role="menu">
+                                                        <a class="dropdown-item" href="#">Update</a>
+                                                        @if (!U.hasPrivelage)
+                                                        {
+                                                            <a class="dropdown-item" href="#">Deactivate</a>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
 
                         <div class="card-footer">
@@ -131,7 +177,7 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody >
+                                <tbody>
                                     @foreach (var d in Model.MovieList)
                                     {
                                         <tr>
