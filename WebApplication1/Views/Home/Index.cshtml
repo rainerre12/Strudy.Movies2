@@ -36,32 +36,6 @@
                         </div>
 
                         <div class="card-body">
-                            @* <table id="movietbl" class="table table-bordered table-striped">
-                            <thead>
-                            <tr>
-                            <th>Id</th>
-                            <th>Name</th>
-                            <th>Status</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach (var d in Model.MovieList)
-                            {
-                            <tr>
-                            <td>@d.Id</td>
-                            <td>@d.Name</td>
-                            @if (d.IsAvailanble)
-                            {
-                            <td><span class="badge badge-success">Available</span></td>
-                            }
-                            else
-                            {
-                            <td><span class="badge badge-danger">Unavailable</span></td>
-                            }
-                            </tr>
-                            }
-                            </tbody>
-                            </table> *@
                         </div>
 
                         <div class="card-footer">
@@ -100,6 +74,7 @@
                                         <th>Name</th>
                                         <th>Username</th>
                                         <th>Status</th>
+                                        <th>Privelage</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -121,6 +96,20 @@
                                                     <span class="badge badge-danger">Unavailable</span>
                                                 </td>
                                             }
+
+                                            @if (U.hasPrivelage)
+                                            {
+                                                <td>
+                                                    <span class="badge badge-success">Granted</span>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>
+                                                    <span class="badge badge-danger">Denied</span>
+                                                </td>
+                                            }
+
                                             <td style="display: flex; justify-content: center;">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-warning">Action</button>
@@ -182,7 +171,16 @@
                                     {
                                         <tr>
                                             <td>@d.MovieName</td>
-                                            <td>@d.GenreName</td>
+                                            <td>
+                                                <div class="select2-secondary">
+                                                    <select class="select2" multiple="multiple" disabled="disabled" style="width: 100%;">
+                                                        @foreach (var genreName in d.GenreName.Split(","))
+                                                        {
+                                                            <option selected>@genreName</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </td>
                                             @if (d.IsAvailable)
                                             {
                                                 <td>
@@ -243,6 +241,7 @@
 
 
 <script src="~/lib/plugins/jquery/jquery.min.js"></script>
+@* <script src="~/lib/plugins/select2/js/select2.full.min.js"></script> *@
 <script src="~/js/personal/IndexScript.js"></script>
 <script type="text/javascript">
     var urlMovies = "@Url.Action("RegisterMovie", "Home")";

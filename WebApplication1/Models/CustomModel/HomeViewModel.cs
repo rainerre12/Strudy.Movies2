@@ -25,10 +25,10 @@ namespace WebApplication1.Models.CustomModel
 
         [Required(ErrorMessage = "Please enter the movie name")]
         public string MovieName { get; set; }
+
+
         [Required(ErrorMessage = "Please select a genre")]
-        public int selectedGenreId { get; set; } = 0;
-
-
+        public List<int> selectMultipleGenreIds { get; set; } = new List<int>();
 
 
 

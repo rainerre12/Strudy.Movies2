@@ -11,23 +11,33 @@
 
 <div class="modal-body">
 
-   <div class="form-group">
-       <label for="inputmoviename">Name</label>
+    <div class="form-group">
+        <label for="inputmoviename">Name</label>
         @Html.TextBoxFor(model => model.MovieName, new { @class = "form-control", id = "inputmoviename", placeholder = "Movie Name" })
         @Html.ValidationMessageFor(model => model.MovieName, "", new { @class = "text-danger" })
-   </div>
+    </div>
 
-   <div class="form-group">
-       <label for="selectgenre">Genre</label>
-        @Html.DropDownListFor(model => model.selectedGenreId, new SelectList(Model.GenreList, "Id", "Name"), "Select a genre", new { @class = "form-control" , id = "selectedGenreId"})
-        @Html.ValidationMessageFor(model => model.selectedGenreId, "", new { @class = "text-danger" })
-   </div>
+    @*  <div class="form-group">
+    <label for="selectgenre">Genre</label>
+    @Html.DropDownListFor(model => model.selectedGenreId, new SelectList(Model.GenreList, "Id", "Name"), "Select a genre", new { @class = "form-control" , id = "selectedGenreId"})
+    @Html.ValidationMessageFor(model => model.selectedGenreId, "", new { @class = "text-danger" })
+    </div> *@
+
+    <div class="form-group">
+        <label for="selectMultipleGenreIds">Genres</label>
+        <div class="select2-primary">
+            @Html.ListBoxFor(model => model.selectMultipleGenreIds, new MultiSelectList(Model.GenreList, "Id", "Name"), new { @class = "select2", multiple = "multiple", style = "width: 100%;", id = "selectMultipleGenreIds" })
+            @Html.ValidationMessageFor(model => model.selectMultipleGenreIds, "", new { @class = "text-danger" })
+        </div>
+
+    </div>
 
 
 </div>
 <div class="modal-footer justify-content-between">
     <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
     <button type="button" class="btn btn-outline-light" id="registerMovie">Register</button>
-</div> 
+</div>
 <script src="~/lib/plugins/toastr/toastr.min.js"></script>
+@* <script src="~/lib/plugins/select2/js/select2.full.min.js"></script> *@
 <script src="~/js/personal/AddMovieScript.js"></script>

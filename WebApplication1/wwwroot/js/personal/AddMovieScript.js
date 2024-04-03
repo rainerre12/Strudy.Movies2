@@ -1,7 +1,7 @@
 ﻿
 
 $(function () {
-
+    $('#selectMultipleGenreIds').select2()
     $('#registerMovie').click(function () {
         // Perform form validation here if needed
         var isValid = true; // Assume form is valid by default
@@ -14,25 +14,26 @@ $(function () {
             $('#inputmoviename').removeClass('is-invalid');
         }
 
-        if ($('#selectedGenreId').val() === '') {
+        if ($('#selectMultipleGenreIds').val().length === 0) {
             isValid = false;
-            $('#selectedGenreId').addClass('is-invalid');
+            $('#selectMultipleGenreIds').addClass('is-invalid');
         } else {
-            $('#selectedGenreId').removeClass('is-invalid');
+            $('#selectMultipleGenreIds').removeClass('is-invalid');
         }
 
         if (isValid) {
 
             var MovieName = $('#inputmoviename').val();
-            var Genreid = $('#selectedGenreId').val();
+            var Genreid = $('#selectMultipleGenreIds').val();
 
             var data = {
                 Movies: {
-                    Name: MovieName,
-                    Type: Genreid
-                }
+                    Name: MovieName
+                },
+                selectMultipleGenreIds: Genreid.map(Number)
+               
             };
-
+            console.log(data);
             $.ajax({
                 url: '/Home/PostRegisterMovie',
                 type: 'POST',

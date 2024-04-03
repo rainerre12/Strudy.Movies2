@@ -53,16 +53,25 @@ namespace WebApplication1.Controllers
                         break;
                     case var type when type == typeof(HomeViewModel.MovieListItem):
 
-                        var MovieListItem = from movie in _context.movies
-                                            join genre in _context.genres on movie.Type equals genre.Id
-                                            select new HomeViewModel.MovieListItem
-                                            {
-                                                Id = movie.Id,
-                                                MovieName = movie.Name,
-                                                GenreName = genre.Name,
-                                                IsAvailable = movie.IsAvailanble
-                                            };
-                        items = await MovieListItem.ToListAsync() as List<T>;
+                        // Query movies with their corresponding genres
+                        var movieListItems = await (
+                            from movie in _context.movies
+                            join movieMap in _context.MovieGenreMaps on movie.Id equals movieMap.movieid
+                            join genre in _context.genres on movieMap.genreid equals genre.Id
+                            select new { movie, genre }
+                        ).ToListAsync();
+
+                        // Group and project the results into MovieListItem objects
+                        var movieItems = movieListItems.GroupBy(x => x.movie)
+                            .Select(group => new HomeViewModel.MovieListItem
+                            {
+                                Id = group.Key.Id,
+                                MovieName = group.Key.Name,
+                                GenreName = string.Join(", ", group.Select(x => x.genre.Name)),
+                                IsAvailable = group.Key.IsAvailanble
+                            }).ToList();
+
+                        return movieItems as List<T>;
 
                         break;
                     case var type when type == typeof(HomeViewModel.UsersListItem):
@@ -113,19 +122,33 @@ namespace WebApplication1.Controllers
 
         [HttpPost]
         public async Task<ActionResult> PostRegisterMovie([FromBody] HomeViewModel model)
-        {
+        {            
             var existingMovie = await _context.movies.FirstOrDefaultAsync(m => m.Name == model.Movies.Name);
             if (existingMovie != null)
-                return BadRequest();
+                return BadRequest("Movie with the same name already exists.");
+
             var postMovie = new Movies
             {
                 Name = model.Movies.Name,
-                Type = model.Movies.Type,
                 IsAvailanble = true
             };
             _context.movies.Add(postMovie);
             await _context.SaveChangesAsync();
-            return Ok();
+
+            int movieId = postMovie.Id;
+            foreach(int genreid in model.selectMultipleGenreIds)
+            {
+                var postGenereMovieMaps = new MovieGenreMaps
+                {
+                    movieid = movieId,
+                    genreid = genreid,
+                    isremoved = false
+                };
+                _context.MovieGenreMaps.Add(postGenereMovieMaps);
+            }
+            await _context.SaveChangesAsync();
+            return Ok("Movie registered successfully.");
+
         }
 
         [HttpPost]
@@ -150,7 +173,7 @@ namespace WebApplication1.Controllers
                 _context.persons.Add(postPerson);
                 await _context.SaveChangesAsync();
 
-                var personId = postPerson.Id;
+                int personId = postPerson.Id;
 
                 var postUseraccount = new UserAccounts
                 {

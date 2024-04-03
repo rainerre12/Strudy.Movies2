@@ -11,6 +11,9 @@ function initScript(urlPersons, urlMovies, urlAssigned) {
 }
 
 $(function () {
+    $('.select2').each(function () {
+        $(this).select2();
+    });
 
     $("#movietbl").DataTable({
         // "responsive": true, "lengthChange": false, "autoWidth": false,
