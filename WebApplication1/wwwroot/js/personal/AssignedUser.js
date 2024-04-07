@@ -1,0 +1,3 @@
+﻿$(function () {
+    $('#selectMultipleMovieIds').select2()
+});

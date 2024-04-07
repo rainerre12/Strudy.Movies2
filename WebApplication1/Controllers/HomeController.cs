@@ -28,9 +28,9 @@ namespace WebApplication1.Controllers
 
             var model = new HomeViewModel
             {
-                GenreList = await GetAllItems<Genre>(),
-                MovieList = await GetAllItems<HomeViewModel.MovieListItem>(),
-                UsersList = await GetAllItems<HomeViewModel.UsersListItem>()
+                GenreList = await GetAllItems<Genre>(Appmodels.ProcedureTypes.ModalDisplayComboBox),
+                MovieList = await GetAllItems<HomeViewModel.MovieListItem>(Appmodels.ProcedureTypes.IndexDisplay),
+                UsersList = await GetAllItems<HomeViewModel.UsersListItem>(Appmodels.ProcedureTypes.IndexDisplay)
 
             };
 
@@ -39,7 +39,7 @@ namespace WebApplication1.Controllers
         }
 
 
-        private async Task<List<T>> GetAllItems<T>() where T : class
+        private async Task<List<T>> GetAllItems<T>(int proceduretype) where T : class
         {
             try
             {
@@ -48,50 +48,117 @@ namespace WebApplication1.Controllers
                 {
                     case var type when type == typeof(Genre):
 
-                        items = await _context.genres.Where(g => g.IsDeleted == false).ToListAsync() as List<T>;
+                        switch (proceduretype)
+                        {
+                            case Appmodels.ProcedureTypes.IndexDisplay:
+
+                                break;
+                            case Appmodels.ProcedureTypes.ModalDisplayComboBox:
+
+                                items = await _context.genres.Where(g => g.IsDeleted == false).ToListAsync() as List<T>;
+
+                                break;
+                        }
 
                         break;
                     case var type when type == typeof(HomeViewModel.MovieListItem):
 
                         // Query movies with their corresponding genres
-                        var movieListItems = await (
-                            from movie in _context.movies
-                            join movieMap in _context.MovieGenreMaps on movie.Id equals movieMap.movieid
-                            join genre in _context.genres on movieMap.genreid equals genre.Id
-                            select new { movie, genre }
-                        ).ToListAsync();
 
-                        // Group and project the results into MovieListItem objects
-                        var movieItems = movieListItems.GroupBy(x => x.movie)
-                            .Select(group => new HomeViewModel.MovieListItem
-                            {
-                                Id = group.Key.Id,
-                                MovieName = group.Key.Name,
-                                GenreName = string.Join(", ", group.Select(x => x.genre.Name)),
-                                IsAvailable = group.Key.IsAvailanble
-                            }).ToList();
+                        switch (proceduretype)
+                        {
+                            case Appmodels.ProcedureTypes.IndexDisplay:
 
-                        return movieItems as List<T>;
+                                var movieListItems = await (
+                                    from movie in _context.movies
+                                    join movieMap in _context.MovieGenreMaps on movie.Id equals movieMap.movieid
+                                    join genre in _context.genres on movieMap.genreid equals genre.Id
+                                    select new { movie, genre }
+                                ).ToListAsync();
+
+                                // Group and project the results into MovieListItem objects
+                                var movieItems = movieListItems.GroupBy(x => x.movie)
+                                    .Select(group => new HomeViewModel.MovieListItem
+                                    {
+                                        Id = group.Key.Id,
+                                        MovieName = group.Key.Name,
+                                        GenreName = string.Join(", ", group.Select(x => x.genre.Name)),
+                                        IsAvailable = group.Key.IsAvailanble
+                                    }).ToList();
+
+                                items = movieItems as List<T>;
+                                break;
+                            case Appmodels.ProcedureTypes.ModalDisplayComboBox:
+                                break;
+                        }
 
                         break;
                     case var type when type == typeof(HomeViewModel.UsersListItem):
 
-                        var UsersListItem = from persons in _context.persons
-                                            join useraccounts in _context.userAccounts on persons.Id equals useraccounts.personid
-                                            select new HomeViewModel.UsersListItem
-                                            {
-                                                personid = persons.Id,
-                                                useraccountid = useraccounts.Id,
-                                                FullName = persons.FirstName + ", " + persons.LastName,
-                                                Username = useraccounts.Username,
-                                                isActive = persons.IsActive,
-                                                hasPrivelage = useraccounts.hasPrivelage
-                                            };
-                        items = await UsersListItem.ToListAsync() as List<T>;
+
+                        switch (proceduretype)
+                        {
+                            case Appmodels.ProcedureTypes.IndexDisplay:
+                                var UsersListItem = from persons in _context.persons
+                                                    join useraccounts in _context.userAccounts on persons.Id equals useraccounts.personid
+                                                    select new HomeViewModel.UsersListItem
+                                                    {
+                                                        personid = persons.Id,
+                                                        useraccountid = useraccounts.Id,
+                                                        FullName = persons.FirstName + ", " + persons.LastName,
+                                                        Username = useraccounts.Username,
+                                                        isActive = persons.IsActive,
+                                                        hasPrivelage = useraccounts.hasPrivelage
+                                                    };
+                                items = await UsersListItem.ToListAsync() as List<T>;
+                                break;
+                            case Appmodels.ProcedureTypes.ModalDisplayComboBox:
+                                break;
+                        }
+
+                        break;
+
+                    case var type when type == typeof(Persons):
+
+                        switch (proceduretype)
+                        {
+                            case Appmodels.ProcedureTypes.IndexDisplay:
+                                break;
+                            case Appmodels.ProcedureTypes.ModalDisplayComboBox:
+
+                                var dropDownPerson = from person in _context.persons
+                                                     join useraccounts in _context.userAccounts on person.Id equals useraccounts.personid
+                                                     where person.IsActive == true && useraccounts.hasPrivelage == false
+                                                     select new Persons
+                                                     {
+                                                         Id = person.Id,
+                                                         FirstName = person.FirstName + ", "+ person.LastName,
+                                                         LastName = person.LastName + ", " + person.FirstName,
+                                                         IsActive = person.IsActive
+                                                     };
+                                items = await dropDownPerson.ToListAsync() as List<T>;
+
+                                break;
+                        }
+                        break;
+                    case var type when type == typeof(Movies):
+
+                        switch (proceduretype)
+                        {
+                            case Appmodels.ProcedureTypes.IndexDisplay:
+                                break;
+                            case Appmodels.ProcedureTypes.ModalDisplayComboBox:
+
+                                items = await _context.movies.Where(m => m.IsAvailanble == true).ToListAsync() as List<T>;
+
+                                break;
+                        }
+
                         break;
 
                     default:
                         throw new NotSupportedException($"Type {typeof(T).Name} is not supported.");
+
 
                 }
 
@@ -112,17 +179,20 @@ namespace WebApplication1.Controllers
         public async Task<IActionResult> RegisterMovie()
         {
             var model = new HomeViewModel();
-            model.GenreList = await GetAllItems<Genre>();
+            model.GenreList = await GetAllItems<Genre>(Appmodels.ProcedureTypes.ModalDisplayComboBox);
             return PartialView("~/Views/Home/Dialog/RegisterMovie.cshtml", model);
         }
-        public IActionResult AssignedUser()
+        public async Task<IActionResult> AssignedUser()
         {
-            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml");
+            var model = new HomeViewModel();
+            model.PersonList = await GetAllItems<Persons>(Appmodels.ProcedureTypes.ModalDisplayComboBox);
+            model.MovieSelectionList = await GetAllItems<Movies>(Appmodels.ProcedureTypes.ModalDisplayComboBox);
+            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml",model);
         }
 
         [HttpPost]
         public async Task<ActionResult> PostRegisterMovie([FromBody] HomeViewModel model)
-        {            
+        {
             var existingMovie = await _context.movies.FirstOrDefaultAsync(m => m.Name == model.Movies.Name);
             if (existingMovie != null)
                 return BadRequest("Movie with the same name already exists.");
@@ -136,7 +206,7 @@ namespace WebApplication1.Controllers
             await _context.SaveChangesAsync();
 
             int movieId = postMovie.Id;
-            foreach(int genreid in model.selectMultipleGenreIds)
+            foreach (int genreid in model.selectMultipleGenreIds)
             {
                 var postGenereMovieMaps = new MovieGenreMaps
                 {
