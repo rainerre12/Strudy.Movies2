@@ -26,7 +26,8 @@
     <div class="form-group">
         <label for="selectMultipleGenreIds">Genres</label>
         <div class="select2-primary">
-            @Html.ListBoxFor(model => model.selectMultipleGenreIds, new MultiSelectList(Model.GenreList, "Id", "Name"), new { @class = "select2", multiple = "multiple", style = "width: 100%;", id = "selectMultipleGenreIds" })
+            @Html.ListBoxFor(model => model.selectMultipleGenreIds, new MultiSelectList(Model.GenreList, "Id", "Name"), 
+            new { @class = "select2", multiple = "multiple", style = "width: 100%;", id = "selectMultipleGenreIds" })
             @Html.ValidationMessageFor(model => model.selectMultipleGenreIds, "", new { @class = "text-danger" })
         </div>
 

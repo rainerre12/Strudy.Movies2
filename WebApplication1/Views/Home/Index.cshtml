@@ -201,7 +201,7 @@
                                                     </button>
                                                     <div class="dropdown-menu" role="menu">
                                                         <a class="dropdown-item" href="#">Info</a>
-                                                        <a class="dropdown-item" href="#">Update</a>
+                                                        <a class="dropdown-item" data-toggle="modal" data-target="#modalRegister" data-modal-type="UpdateMovie" data-id ="@d.Id">Update</a>
                                                         <a class="dropdown-item" href="#">Deactivate</a>
                                                     </div>
                                                 </div>
@@ -248,8 +248,9 @@
     var urlMovies = "@Url.Action("RegisterMovie", "Home")";
     var urlPersons = "@Url.Action("RegisterUser", "Home")";
     var urlAssigned = "@Url.Action("AssignedUser", "Home")";
+    var urlUpdateMovies = "@Url.Action("UpdateMovie","Home")";
 
     $(function () {
-        window.initScript(urlPersons, urlMovies, urlAssigned);
+        window.initScript(urlPersons, urlMovies, urlAssigned, urlUpdateMovies);
     });
 </script>

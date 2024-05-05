@@ -3,11 +3,14 @@
 var _urlPersons;
 var _urlMovies;
 var _urlAssigned;
+var _urlUpdateMovies
 
-function initScript(urlPersons, urlMovies, urlAssigned) {
+function initScript(urlPersons, urlMovies, urlAssigned,urlUpdateMovie) {
     _urlMovies = urlMovies;
     _urlPersons = urlPersons;
     _urlAssigned = urlAssigned;
+    _urlUpdateMovies = urlUpdateMovie;
+    
 }
 
 $(function () {
@@ -60,6 +63,16 @@ $(function () {
                         $('#ModalContent').html(data);
                     })
                     .catch(error => console.error('Error:', error));
+                break;
+            case 'UpdateMovie':
+                var movieId = button.attr('data-id');
+                console.log(movieId);
+                fetch(_urlUpdateMovies + '/' + movieId)
+                    .then(response => response.text())
+                    .then(data => {
+                        $('#ModalContent').html(data);
+                    })
+                    .catch(error => console.error('Error:', error))
                 break;
             default:
                 console.log('Error');

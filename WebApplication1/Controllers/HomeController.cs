@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,7 @@ namespace WebApplication1.Controllers
         }
 
 
-        private async Task<List<T>> GetAllItems<T>(int proceduretype) where T : class
+        private async Task<List<T>> GetAllItems<T>(int proceduretype, bool isUpdate = false, int id = 0) where T : class
         {
             try
             {
@@ -55,7 +56,25 @@ namespace WebApplication1.Controllers
                                 break;
                             case Appmodels.ProcedureTypes.ModalDisplayComboBox:
 
-                                items = await _context.genres.Where(g => g.IsDeleted == false).ToListAsync() as List<T>;
+                                if (isUpdate)
+                                {
+                                    var result = await (from g in _context.genres
+                                                        join mgm in _context.MovieGenreMaps on g.Id equals mgm.genreid into mgmGroup
+                                                        from mgm in mgmGroup.Where(m => m.movieid == id).DefaultIfEmpty()
+                                                        select new Genre
+                                                        {
+                                                            Id = g.Id,
+                                                            Name = g.Name,
+                                                            IsDeleted = mgm != null ? true : false
+                                                        }).ToListAsync();
+                                    result = result.OrderByDescending(mgm => mgm.Id).ToList();
+
+                                    items = result as List<T>;
+                                }
+                                else
+                                {
+                                    items = await _context.genres.Where(g => g.IsDeleted == false).ToListAsync() as List<T>;
+                                }
 
                                 break;
                         }
@@ -73,6 +92,7 @@ namespace WebApplication1.Controllers
                                     from movie in _context.movies
                                     join movieMap in _context.MovieGenreMaps on movie.Id equals movieMap.movieid
                                     join genre in _context.genres on movieMap.genreid equals genre.Id
+                                    where movieMap.isremoved == false
                                     select new { movie, genre }
                                 ).ToListAsync();
 
@@ -132,7 +152,7 @@ namespace WebApplication1.Controllers
                                                      select new Persons
                                                      {
                                                          Id = person.Id,
-                                                         FirstName = person.FirstName + ", "+ person.LastName,
+                                                         FirstName = person.FirstName + ", " + person.LastName,
                                                          LastName = person.LastName + ", " + person.FirstName,
                                                          IsActive = person.IsActive
                                                      };
@@ -182,12 +202,27 @@ namespace WebApplication1.Controllers
             model.GenreList = await GetAllItems<Genre>(Appmodels.ProcedureTypes.ModalDisplayComboBox);
             return PartialView("~/Views/Home/Dialog/RegisterMovie.cshtml", model);
         }
+
+        public async Task<IActionResult> UpdateMovie(int id)
+        {
+            var model = new HomeViewModel();
+            model.Movies = await _context.movies.Where(m => m.Id == id).FirstOrDefaultAsync();
+            if (model.Movies != null)
+            {
+                byte[] idBytes = BitConverter.GetBytes(model.Movies.Id);
+                string base64EncodedID = Convert.ToBase64String(idBytes);
+                ViewBag.EncodedID = base64EncodedID;
+                model.GenreList = await GetAllItems<Genre>(Appmodels.ProcedureTypes.ModalDisplayComboBox, true, model.Movies.Id);
+            }
+            return PartialView("~/Views/Home/Dialog/UpdateMovie.cshtml", model);
+        }
+
         public async Task<IActionResult> AssignedUser()
         {
             var model = new HomeViewModel();
             model.PersonList = await GetAllItems<Persons>(Appmodels.ProcedureTypes.ModalDisplayComboBox);
             model.MovieSelectionList = await GetAllItems<Movies>(Appmodels.ProcedureTypes.ModalDisplayComboBox);
-            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml",model);
+            return PartialView("~/Views/Home/Dialog/AssignedUser.cshtml", model);
         }
 
         [HttpPost]
@@ -206,19 +241,81 @@ namespace WebApplication1.Controllers
             await _context.SaveChangesAsync();
 
             int movieId = postMovie.Id;
-            foreach (int genreid in model.selectMultipleGenreIds)
+            foreach (var genreid in model.selectMultipleGenreIds)
             {
-                var postGenereMovieMaps = new MovieGenreMaps
+                var postGenreMovieMaps = new MovieGenreMaps
                 {
                     movieid = movieId,
                     genreid = genreid,
                     isremoved = false
                 };
-                _context.MovieGenreMaps.Add(postGenereMovieMaps);
+                _context.MovieGenreMaps.Add(postGenreMovieMaps);
             }
             await _context.SaveChangesAsync();
             return Ok("Movie registered successfully.");
 
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PostUpdateMovie([FromBody] HomeViewModel model)
+        {
+            var movies = await _context.movies.FirstOrDefaultAsync(m => m.Id == model.Movies.Id && m.IsAvailanble == true);
+            if (movies.Name != model.Movies.Name)
+            {
+                _context.movies.Update(model.Movies);
+            }
+
+            foreach (var genereid in model.selectMultipleGenreIds)
+            {
+                var existing = await _context.MovieGenreMaps
+                            .FirstOrDefaultAsync(g => g.genreid == genereid && g.movieid == model.Movies.Id);
+                if (existing == null)
+                {
+                    var postGenreMovieMaps = new MovieGenreMaps
+                    {
+                        movieid = model.Movies.Id,
+                        genreid = genereid,
+                        isremoved = false
+                    };
+                    _context.MovieGenreMaps.Add(postGenreMovieMaps);
+                }
+                else
+                {
+                    if(existing.isremoved == true)
+                    {
+                        existing.isremoved = false;
+                        _context.MovieGenreMaps.Update(existing);
+                    }
+                }
+            }
+
+            //Update The GenremovieMaps
+            try
+            {
+                //var existingData = await _context.MovieGenreMaps
+                //.Where(m => !model.selectMultipleGenreIds.Contains(m.genreid) && m.movieid == model.Movies.Id && m.isremoved == false).ToListAsync();
+
+                var existingData = await _context.MovieGenreMaps.Where(m => m.movieid == model.Movies.Id).ToListAsync();
+
+                foreach (var data in existingData.Where(e => !model.selectMultipleGenreIds.Contains(e.genreid)))
+                {
+                    var isRemovedIsUpdated = new MovieGenreMaps
+                    {
+                        movieid = model.Movies.Id,
+                        genreid = data.genreid,
+                        isremoved = true
+                    };
+                    _context.MovieGenreMaps.Update(isRemovedIsUpdated);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            
+            await _context.SaveChangesAsync();
+            return Ok("Movie Updated.");
         }
 
         [HttpPost]
@@ -263,6 +360,8 @@ namespace WebApplication1.Controllers
                 return StatusCode(500, "An error occurred while registering user. Please try again later.");
             }
         }
+
+
 
 
         #endregion
